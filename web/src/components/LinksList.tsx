@@ -27,6 +27,17 @@ export function LinksList({ refreshKey }: { refreshKey: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
+  useEffect(() => {
+  const onFocus = () => load();
+  window.addEventListener("focus", onFocus);
+
+  return () => {
+    window.removeEventListener("focus", onFocus);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
+
   async function handleCopy(link: MockLink) {
     try {
       const url = `${window.location.origin}/${link.shortCode}`;
@@ -80,7 +91,7 @@ export function LinksList({ refreshKey }: { refreshKey: number }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:block text-xs text-gray-900/60">
+            <div className="text-xs text-gray-900/60">
               {accessText(link.accessCount)}
             </div>
 
