@@ -101,3 +101,32 @@ export async function mockResolveAndIncrement(
 
   return updated;
 }
+
+function escapeCsv(value: string) {
+  // Escapa aspas e envolve em aspas se precisar
+  const mustQuote = /[",\n;]/.test(value);
+  const escaped = value.replace(/"/g, '""');
+  return mustQuote ? `"${escaped}"` : escaped;
+}
+
+export async function mockDownloadCsv(): Promise<Blob> {
+  await new Promise((r) => setTimeout(r, 200));
+
+  const links = loadLinks();
+
+  const header = ["shortUrl", "originalUrl", "accessCount"].join(",") + "\n";
+
+  const rows = links
+    .map((l) => {
+      const shortUrl = `${window.location.origin}/${l.shortCode}`;
+      return [
+        escapeCsv(shortUrl),
+        escapeCsv(l.originalUrl),
+        String(l.accessCount ?? 0),
+      ].join(",");
+    })
+    .join("\n");
+
+  const csv = header + rows + "\n";
+  return new Blob([csv], { type: "text/csv;charset=utf-8" });
+}
