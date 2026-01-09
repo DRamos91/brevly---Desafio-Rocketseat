@@ -87,3 +87,78 @@ CLOUDFLARE_ACCESS_KEY_ID="..."
 CLOUDFLARE_SECRET_ACCESS_KEY="..."
 CLOUDFLARE_BUCKET="brevly-exports"
 CLOUDFLARE_PUBLIC_URL="https://<seu-dominio-ou-public-url-do-r2>"
+
+## 1.2 Instalar dependências do backend
+cd server
+npm install
+
+## 1.3 Executar migrations do banco
+npm run db:migrate
+
+
+Esse script executa as migrations usando Drizzle ORM e requer que DATABASE_URL esteja configurada corretamente.
+
+## 1.4 Rodar o servidor
+npm run dev
+
+
+O backend ficará disponível em:
+
+http://localhost:3333
+
+🎨 Front-end (web)
+## 2.1 Variáveis de ambiente
+
+Crie o arquivo web/.env baseado em web/.env.example.
+
+Exemplo:
+
+VITE_FRONTEND_URL=http://localhost:5173
+VITE_BACKEND_URL=http://localhost:3333
+
+## 2.2 Instalar dependências do front-end
+cd web
+npm install
+
+## 2.3 Rodar o front-end
+npm run dev
+
+
+A aplicação estará disponível em:
+
+http://localhost:5173
+
+🔌 Principais endpoints do Back-end
+
+POST /links → cria um link
+
+GET /links → lista todos os links
+
+DELETE /links/:id → remove um link
+
+GET /links/resolve/:shortCode → resolve a URL encurtada
+
+POST /links/:id/access → incrementa acessos
+
+POST /export/links → gera CSV, envia para o R2 e retorna a URL pública
+
+🐳 Docker (Back-end)
+
+No diretório server/:
+
+docker build -t brevly-server .
+docker run -p 3333:3333 --env-file .env brevly-server
+
+📌 Observações importantes
+
+A exportação do CSV utiliza Cloudflare R2, que é compatível com a API do S3.
+
+Não é necessário ter conta na AWS para este projeto.
+
+A SDK do S3 é usada apenas como cliente compatível.
+
+-----------------------------------------------------------------------------
+
+👤 Autor
+
+Daniel Moreno Ramos Gonçalves
