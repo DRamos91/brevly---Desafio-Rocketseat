@@ -29,16 +29,17 @@ export async function mockCreateLink(data: CreateLinkFormData): Promise<MockLink
     accessCount: 0,
   };
 
-  links.push(link);
+  links.unshift(link);
   return link;
 }
 
 export async function mockListLinks(): Promise<MockLink[]> {
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, 250));
   return [...links];
 }
 
 export async function mockDeleteLink(id: string) {
+  await new Promise((r) => setTimeout(r, 250));
   const index = links.findIndex((l) => l.id === id);
   if (index >= 0) links.splice(index, 1);
 }

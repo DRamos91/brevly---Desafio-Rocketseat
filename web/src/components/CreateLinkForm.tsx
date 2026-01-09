@@ -7,7 +7,8 @@ import { Button } from "./Button";
 import { createLinkSchema, type CreateLinkFormData } from "../lib/validators";
 import { mockCreateLink } from "../lib/mockLinks";
 
-export function CreateLinkForm() {
+export function CreateLinkForm({ onCreated }: { onCreated?: () => void }) {
+// export function CreateLinkForm({ onCreated }: { onCreated?: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -30,7 +31,7 @@ export function CreateLinkForm() {
     try {
       await mockCreateLink(data);
       reset();
-      // Depois a gente dispara o refresh da lista aqui (quando montar "Meus links")
+      onCreated?.();
     } catch (err: any) {
       if (err?.code === "DUPLICATE") {
         setError("shortCode", {

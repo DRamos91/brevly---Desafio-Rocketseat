@@ -1,8 +1,12 @@
+import { useState } from "react";
+
 import { Logo } from "../components/Logo";
 import { CreateLinkForm } from "../components/CreateLinkForm";
-
+import { LinksList } from "../components/LinksList";
 
 export function Home() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
   return (
     <div className="min-h-screen bg-bg">
       <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -18,12 +22,7 @@ export function Home() {
               Cole aqui a URL que deseja encurtar
             </p>
 
-            <CreateLinkForm />
-            {/* <div className="mt-6 space-y-4">
-              <div className="h-12 rounded-lg bg-gray-100" />
-              <div className="h-12 rounded-lg bg-gray-100" />
-              <div className="h-12 rounded-lg bg-blue/20" />
-            </div> */}
+            <CreateLinkForm onCreated={() => setRefreshKey((k) => k + 1)} />
           </section>
 
           {/* Card Meus links */}
@@ -38,12 +37,7 @@ export function Home() {
               </button>
             </div>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 py-10 text-center">
-              <div className="text-2xl">🔗</div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-gray-900/70">
-                Ainda não existem links cadastrados
-              </div>
-            </div>
+            <LinksList refreshKey={refreshKey} />
           </section>
         </main>
       </div>
