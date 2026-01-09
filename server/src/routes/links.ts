@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { db } from "../db";
 import { links } from "../db/schema";
-import { and, eq, ilike } from "drizzle-orm";
+import { eq, ilike, sql } from "drizzle-orm";
 
 const createLinkBodySchema = z.object({
   originalUrl: z.string().url(),
@@ -45,11 +45,7 @@ export async function linksRoutes(app: FastifyInstance) {
 
   // Listar links
   app.get("/", async () => {
-    const all = await db
-      .select()
-      .from(links)
-      .orderBy(links.createdAt);
-
+    const all = await db.select().from(links).orderBy(links.createdAt);
     return all;
   });
 
@@ -57,10 +53,15 @@ export async function linksRoutes(app: FastifyInstance) {
   app.delete("/:id", async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).parse(request.params);
 
-    const deleted = await db.delete(links).where(eq(links.id, params.id)).returning();
+    const deleted = await db
+      .delete(links)
+      .where(eq(links.id, params.id))
+      .returning();
 
     if (deleted.length === 0) {
-      return reply.status(404).send({ code: "NOT_FOUND", message: "Link não encontrado." });
+      return reply
+        .status(404)
+        .send({ code: "NOT_FOUND", message: "Link não encontrado." });
     }
 
     return reply.status(204).send();
@@ -81,7 +82,9 @@ export async function linksRoutes(app: FastifyInstance) {
       .limit(1);
 
     if (found.length === 0) {
-      return reply.status(404).send({ code: "NOT_FOUND", message: "Link não encontrado." });
+      return reply
+        .status(404)
+        .send({ code: "NOT_FOUND", message: "Link não encontrado." });
     }
 
     return found[0];
@@ -91,17 +94,19 @@ export async function linksRoutes(app: FastifyInstance) {
   app.post("/:id/access", async (request, reply) => {
     const params = z.object({ id: z.string().uuid() }).parse(request.params);
 
-    // Incremento atômico no banco
+    // ✅ Incremento atômico no banco (correto com Drizzle/Postgres)
     const updated = await db
       .update(links)
       .set({
-        accessCount: (links.accessCount as any) + 1,
+        accessCount: sql<number>`${links.accessCount} + 1`,
       })
       .where(eq(links.id, params.id))
       .returning();
 
     if (updated.length === 0) {
-      return reply.status(404).send({ code: "NOT_FOUND", message: "Link não encontrado." });
+      return reply
+        .status(404)
+        .send({ code: "NOT_FOUND", message: "Link não encontrado." });
     }
 
     return updated[0];
