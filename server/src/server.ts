@@ -1,0 +1,7 @@
+import "dotenv/config";
+import { app } from "./app";
+import { env } from "./env";
+
+app.listen({ port: env.PORT, host: "0.0.0.0" }).then(() => {
+  app.log.info(`HTTP server running on port ${env.PORT}`);
+});
