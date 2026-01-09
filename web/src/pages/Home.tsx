@@ -4,8 +4,7 @@ import { Logo } from "../components/Logo";
 import { CreateLinkForm } from "../components/CreateLinkForm";
 import { LinksList } from "../components/LinksList";
 
-import { mockListLinks, mockDownloadCsv } from "../lib/mockLinks";
-import { downloadBlob } from "../lib/download";
+import { exportLinksCsv, listLinks } from "../lib/linksApi";
 
 export function Home() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -16,23 +15,24 @@ export function Home() {
   // Descobre se tem links para habilitar/desabilitar o botão CSV
   useEffect(() => {
     async function check() {
-      const links = await mockListLinks();
-      setHasLinks(links.length > 0);
+      try {
+        const links = await listLinks();
+        setHasLinks(links.length > 0);
+      } catch {
+        // se der erro (backend off), desabilita o botão por segurança
+        setHasLinks(false);
+      }
     }
+
     check();
   }, [refreshKey]);
 
   async function handleDownloadCsv() {
     setIsDownloading(true);
     try {
-      const blob = await mockDownloadCsv();
-
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, "0");
-      const dd = String(now.getDate()).padStart(2, "0");
-
-      downloadBlob(blob, `brevly-links-${yyyy}-${mm}-${dd}.csv`);
+      const { url } = await exportLinksCsv();
+      // abre o CSV público do R2/CDN em outra aba
+      window.open(url, "_blank", "noopener,noreferrer");
     } finally {
       setIsDownloading(false);
     }

@@ -1,37 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Logo } from "../components/Logo";
-import { mockResolveAndIncrement } from "../lib/mockLinks";
+import { resolveLink, incrementAccess } from "../lib/linksApi";
 
 export function Redirect() {
-  const { shortCode } = useParams<{ shortCode: string }>();
+  const params = useParams();
+  const shortCode = params.shortCode; // string | undefined
   const navigate = useNavigate();
-
-  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!shortCode) {
-      navigate("*", { replace: true });
+      navigate("/", { replace: true });
       return;
     }
 
-    async function run() {
+    (async () => {
       try {
-        const link = await mockResolveAndIncrement(shortCode);
+        const link = await resolveLink(shortCode);
+        await incrementAccess(link.id);
+
         window.location.replace(link.originalUrl);
       } catch {
-        setError(true);
+        // manda pro NotFound (o Route path="*" vai pegar)
+        navigate("/404", { replace: true });
       }
-    }
-
-    run();
+    })();
   }, [shortCode, navigate]);
-
-  useEffect(() => {
-    if (error) {
-      navigate("*", { replace: true });
-    }
-  }, [error, navigate]);
 
   return (
     <div className="min-h-screen bg-bg">

@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
-import { mockDeleteLink, mockListLinks, type MockLink } from "../lib/mockLinks";
 import { EmptyState } from "./EmptyState";
+import { deleteLink, listLinks } from "../lib/linksApi";
 
 function accessText(n: number) {
   return n === 1 ? "1 acesso" : `${n} acessos`;
 }
 
+type LinkItem = {
+  id: string;
+  originalUrl: string;
+  shortCode: string;
+  accessCount: number;
+};
+
 export function LinksList({ refreshKey }: { refreshKey: number }) {
-  const [items, setItems] = useState<MockLink[]>([]);
+  const [items, setItems] = useState<LinkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -15,8 +22,15 @@ export function LinksList({ refreshKey }: { refreshKey: number }) {
   async function load() {
     setIsLoading(true);
     try {
-      const data = await mockListLinks();
-      setItems(data);
+      const data = await listLinks();
+      setItems(
+        data.map((l) => ({
+          id: l.id,
+          originalUrl: l.originalUrl,
+          shortCode: l.shortCode,
+          accessCount: l.accessCount ?? 0,
+        }))
+      );
     } finally {
       setIsLoading(false);
     }
@@ -27,33 +41,35 @@ export function LinksList({ refreshKey }: { refreshKey: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
+  // Recarrega quando você volta do redirect (contador atualizado)
   useEffect(() => {
-  const onFocus = () => load();
-  window.addEventListener("focus", onFocus);
+    const onFocus = () => load();
+    window.addEventListener("focus", onFocus);
 
-  return () => {
-    window.removeEventListener("focus", onFocus);
-  };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-
-  async function handleCopy(link: MockLink) {
+  async function handleCopy(link: LinkItem) {
     try {
       const url = `${window.location.origin}/${link.shortCode}`;
       await navigator.clipboard.writeText(url);
       setCopiedId(link.id);
       setTimeout(() => setCopiedId(null), 1200);
     } catch {
-      // fallback simples
-      window.prompt("Copie o link:", `${window.location.origin}/${link.shortCode}`);
+      window.prompt(
+        "Copie o link:",
+        `${window.location.origin}/${link.shortCode}`
+      );
     }
   }
 
   async function handleDelete(id: string) {
     setDeletingId(id);
     try {
-      await mockDeleteLink(id);
+      await deleteLink(id);
       await load();
     } finally {
       setDeletingId(null);
@@ -63,9 +79,9 @@ export function LinksList({ refreshKey }: { refreshKey: number }) {
   if (isLoading) {
     return (
       <div className="mt-6 space-y-3">
-        <div className="h-14 rounded-lg bg-gray-100 animate-pulse" />
-        <div className="h-14 rounded-lg bg-gray-100 animate-pulse" />
-        <div className="h-14 rounded-lg bg-gray-100 animate-pulse" />
+        <div className="h-14 animate-pulse rounded-lg bg-gray-100" />
+        <div className="h-14 animate-pulse rounded-lg bg-gray-100" />
+        <div className="h-14 animate-pulse rounded-lg bg-gray-100" />
       </div>
     );
   }
