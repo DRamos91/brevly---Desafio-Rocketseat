@@ -1,4 +1,6 @@
 import { Logo } from "../components/Logo";
+import { CreateLinkForm } from "../components/CreateLinkForm";
+
 
 export function Home() {
   return (
@@ -16,11 +18,12 @@ export function Home() {
               Cole aqui a URL que deseja encurtar
             </p>
 
-            <div className="mt-6 space-y-4">
+            <CreateLinkForm />
+            {/* <div className="mt-6 space-y-4">
               <div className="h-12 rounded-lg bg-gray-100" />
               <div className="h-12 rounded-lg bg-gray-100" />
               <div className="h-12 rounded-lg bg-blue/20" />
-            </div>
+            </div> */}
           </section>
 
           {/* Card Meus links */}
